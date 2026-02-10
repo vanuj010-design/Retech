@@ -3,8 +3,9 @@ import mysql.connector
 
 def get_db():
     return mysql.connector.connect(
-        host=os.environ.get("mysql.railway.internal"),
-        user=os.environ.get("root"),
-        password=os.environ.get("KzrPQbswqyGVXGGVuTumDKCQidBSRyFd"),
-        database=os.environ.get("railway")
+        host=os.environ.get("DB_HOST"),
+        user=os.environ.get("DB_USER"),
+        password=os.environ.get("DB_PASSWORD"),
+        database=os.environ.get("DB_NAME"),
+        port=3306
     )
