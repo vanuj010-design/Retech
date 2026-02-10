@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ReTech – Buy Refurbished Phones & Electronics in India</title>
+
+    <!-- SEO -->
+    <meta name="description" content="Buy certified refurbished phones and electronics in India at ReTech. Quality checked devices with warranty.">
+    <meta name="keywords" content="refurbished phones India, refurbished iPhone, refurbished Samsung, ReTech">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body { background-color: #f5f7fa; }
+        .navbar-brand span { color: #28a745; font-weight: bold; }
+        .hero { padding: 40px 0; text-align: center; }
+        .hero h1 { font-weight: bold; }
+        .search-box { max-width: 900px; margin: 30px auto; }
+
+        .dropdown-hover { position: relative; }
+        .dropdown-hover:hover > .dropdown-menu { display: block; }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            z-index: 1000;
+        }
+
+        .product-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .seo-content {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 🔹 NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/">Re<span>Tech</span></a>
+
+        <div class="ms-auto">
+            {% if user %}
+            <div class="dropdown-hover d-inline-block position-relative">
+                <a href="#" class="fw-bold text-primary text-decoration-none">👤 {{ user.name }}</a>
+
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                    <li><a class="dropdown-item" href="/address">Address</a></li>
+                    <li><a class="dropdown-item" href="/orders">My Orders</a></li>
+                    <li><a class="dropdown-item" href="/cart">Add To Cart</a></li>
+                    <li><a class="dropdown-item" href="/chat-support">Chat Support</a></li>
+                    <li><a class="dropdown-item" href="/change_password">Change Password</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+                </ul>
+            </div>
+            {% else %}
+                <a href="/login" class="btn btn-outline-primary btn-sm me-2">Login</a>
+                <a href="/register" class="btn btn-primary btn-sm">Sign Up</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<!-- 🔹 HERO -->
+<section class="hero container">
+    <h1>India’s Trusted Refurbished Electronics Marketplace</h1>
+    <p class="text-muted">Save money. Reduce e-waste. Buy refurbished 🌱</p>
+</section>
+
+<!-- 🔹 SEARCH -->
+<form method="get" action="/">
+<div class="search-box container">
+    <div class="row g-2">
+
+        <div class="col-md-4">
+            <div class="dropdown w-100">
+                <button class="btn btn-outline-secondary w-100 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    All Categories
+                </button>
+                <ul class="dropdown-menu w-100">
+                    <li class="dropdown-header">📱 Phones</li>
+                    <li><a class="dropdown-item" href="/?q=Apple">Apple</a></li>
+                    <li><a class="dropdown-item" href="/?q=Samsung">Samsung</a></li>
+                    <li><a class="dropdown-item" href="/?q=OnePlus">OnePlus</a></li>
+                    <li><a class="dropdown-item" href="/?q=Xiaomi">Xiaomi</a></li>
+                </ul>
+            </div>
+        </div>
+        
+
+        <div class="col-md-6">
+            <input type="text" class="form-control" name="q"
+                   value="{{ search or '' }}"
+                   placeholder="Search by phone name, brand, RAM, ROM...">
+        </div>
+
+        <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-success">Search</button>
+        </div>
+
+    </div>
+</div>
+</form>
+
+<!-- 🔹 PRODUCTS -->
+<div class="container mt-4">
+    <div class="row">
+
+        {% if products %}
+        {% for p in products %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm product-card">
+
+                <img src="/static/uploads/{{ p.image_url }}"
+                     class="card-img-top"
+                     style="height:220px; object-fit:cover;"
+                     onclick="window.location.href='/product/{{ p.id }}'">
+
+                <div class="card-body">
+                    <h5>{{ p.product_name }}</h5>
+                    <p class="text-muted">{{ p.brand }} | {{ p.ram }} RAM | {{ p.rom }} ROM</p>
+                    <p class="fw-bold text-success fs-5">₹{{ p.price }}</p>
+
+                    {% if p.stock == 0 %}
+    <div class="alert alert-danger text-center py-1 mb-2">
+        ❌ Out of Stock
+    </div>
+
+    <button class="btn btn-secondary w-100 mt-2" disabled>
+        Add to Cart
+    </button>
+
+    <button class="btn btn-secondary w-100 mt-2" disabled>
+        Buy Now
+    </button>
+
+    <button class="btn btn-secondary w-100 mt-2" disabled>
+        View
+    </button>
+
+{% else %}
+
+    {% if p.stock == 1 %}
+        <div class="alert alert-warning text-center py-1 mb-2">
+            ⚠ Only 1 left
+        </div>
+    {% endif %}
+
+    <a href="/cart/{{ p.id }}"
+       class="btn btn-warning w-100 mt-2">
+        Add to Cart
+    </a>
+
+    <a href="/cart/{{ p.id }}?buy=1"
+       class="btn btn-success w-100 mt-2">
+        Buy Now
+    </a>
+
+    <a href="/product_detail/{{ p.id }}"
+       class="btn btn-outline-primary w-100 mt-2">
+        View
+    </a>
+
+{% endif %}
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+    </div>
+</div>
+
+<!-- 🔹 SEO -->
+<div class="container seo-content">
+    <h2>Buy Refurbished Phones & Electronics Online in India</h2>
+    <p>ReTech provides certified refurbished smartphones and electronics.</p>
+</div>
+
+</body>
+</html>

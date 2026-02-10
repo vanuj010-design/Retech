@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ product.product_name }} | ReTech</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container mt-4">
+    <a href="/" class="btn btn-outline-secondary mb-3">← Back to products</a>
+
+    <div class="row bg-white p-4 rounded shadow">
+
+        <!-- IMAGE -->
+        <div class="col-md-5 text-center">
+            <img src="/static/uploads/{{ product.image_url }}"
+                 class="img-fluid rounded"
+                 style="max-height:350px;">
+        </div>
+
+        <!-- DETAILS -->
+        <div class="col-md-7">
+            <h3>{{ product.product_name }}</h3>
+            <p class="text-muted">{{ product.brand }} | {{ product.model_number }}</p>
+
+            <h4 class="text-success">₹{{ product.price }}</h4>
+
+            <hr>
+
+            <table class="table table-sm">
+                <tr><th>Brand</th><td>{{ product.brand }}</td></tr>
+                <tr><th>Model</th><td>{{ product.model_number }}</td></tr>
+                <tr><th>RAM</th><td>{{ product.ram }}</td></tr>
+                <tr><th>ROM</th><td>{{ product.rom }}</td></tr>
+                <tr><th>Color</th><td>{{ product.color }}</td></tr>
+                <tr><th>Operating System</th><td>{{ product.operating_system }}</td></tr>
+                <tr><th>Display Type</th><td>{{ product.display_type }}</td></tr>
+                <tr><th>Resolution</th><td>{{ product.resolution }}</td></tr>
+                <tr><th>Refresh Rate</th><td>{{ product.refresh_rate }}</td></tr>
+                <tr><th>Launch Year</th><td>{{ product.launch_year }}</td></tr>
+                <tr><th>Condition</th><td>{{ product.product_condition }}</td></tr>
+            </table>
+
+            <div class="d-flex gap-3 mt-4">
+                {% if product.stock == 0 %}
+    <div class="alert alert-danger">
+        ❌ Out of Stock
+    </div>
+
+    <button class="btn btn-secondary w-100 mt-2" disabled>
+        Add to Cart
+    </button>
+
+{% else %}
+
+    {% if product.stock == 1 %}
+        <div class="alert alert-warning">
+            ⚠ Only 1 left
+        </div>
+    {% endif %}
+
+    <a href="/cart/{{ product.id }}"
+       class="btn btn-warning w-100 mt-2">
+        🛒 Add to Cart
+    </a>
+
+{% endif %}
+
+
+                <a href="/cart/{{ product.id }}?buy=1"
+   class="btn btn-success w-100 mt-2">
+   ⚡ Buy Now
+</a>
+
+
+</div>
+
+        </div>
+
+    </div>
+</div>
+<script>
+function addToCart(productId) {
+    alert("Product added to cart (cart system coming next)");
+}
+
+function buyNow(productId) {
+    alert("Buy Now clicked (checkout coming next)");
+}
+</script>
+
+</body>
+</html>

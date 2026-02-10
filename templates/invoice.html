@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tax Invoice | ReTech</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background:#f5f7fa;
+        }
+
+        .invoice-box {
+            background:#fff;
+            padding:30px;
+            max-width:900px;
+            margin:auto;
+            box-shadow:0 10px 25px rgba(0,0,0,.1);
+            line-height: 1.6;
+        }
+
+        .small-text { font-size: 14px; }
+
+        .signature {
+            height: 80px;
+            border-bottom: 1px solid #333;
+            width: 200px;
+            margin-left: auto;
+        }
+
+        /* ================= PRINT STYLES ================= */
+        @media print {
+
+            @page {
+                size: A4;
+                margin: 15mm;
+            }
+
+            body {
+                background: #ffffff !important;
+                margin: 0;
+                padding: 0;
+                color: #000;
+                font-size: 12pt;
+            }
+
+            .invoice-box {
+                box-shadow: none !important;
+                border: none;
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            button {
+                display: none !important;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse !important;
+            }
+
+            th, td {
+                border: 1px solid #000 !important;
+                padding: 6px !important;
+            }
+
+            th {
+                background: #f2f2f2 !important;
+                color: #000;
+            }
+
+            h3, h5, h6, p {
+                color: #000 !important;
+            }
+
+            .signature {
+                border-bottom: 1px solid #000;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container mt-4">
+    <div class="invoice-box">
+
+        <!-- HEADER -->
+        <div class="d-flex justify-content-between align-items-center">
+            <h3>🧾 TAX INVOICE</h3>
+            <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
+                🖨 Print
+            </button>
+        </div>
+
+        <hr>
+
+        <!-- VENDOR DETAILS -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h6><strong>Vendor Details</strong></h6>
+                <p class="small-text">
+                    <strong>ReTech Pvt Ltd</strong><br>
+                    Bengaluru, Karnataka – 560001<br>
+                    GSTIN: 29ABCDE1234F1Z5<br>
+                    📧 support@retech.in
+                </p>
+            </div>
+
+            <!-- INVOICE META -->
+            <div class="col-md-6 text-end">
+                <p class="small-text">
+                    <strong>Invoice No:</strong>
+                    INV-{{ order.created_at.strftime("%Y%m%d") }}-{{ order.id }}<br>
+
+                    <strong>Invoice Date:</strong>
+                    {{ order.created_at.strftime("%d %b %Y") }}<br>
+
+                    <strong>Order ID:</strong> {{ order.id }}<br>
+                    <strong>Status:</strong> {{ order.status }}
+                </p>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- CUSTOMER DETAILS -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h6><strong>Bill To (Customer)</strong></h6>
+                <p class="small-text">
+                    {{ address.full_name }}<br>
+                    {{ address.address_line }}<br>
+                    {{ address.city }}, {{ address.state }} – {{ address.pincode }}<br>
+                    📞 {{ address.phone }}
+                </p>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- ITEMS TABLE -->
+        <h6><strong>Invoice Details</strong></h6>
+
+        <table class="table mt-2">
+            <thead class="text-center">
+                <tr>
+                    <th>#</th>
+                    <th>Description</th>
+                    <th>HSN / SAC</th>
+                    <th>Qty</th>
+                    <th>Price (₹)</th>
+                    <th>Total (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in items %}
+                <tr>
+                    <td class="text-center">{{ loop.index }}</td>
+                    <td>{{ i.product_name }}</td>
+                    <td class="text-center">{{ i.hsn_code or "8517" }}</td>
+                    <td class="text-center">{{ i.quantity }}</td>
+                    <td class="text-end">{{ i.price }}</td>
+                    <td class="text-end">{{ i.quantity * i.price }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- TOTAL -->
+        <div class="row mt-3">
+            <div class="col-md-6"></div>
+            <div class="col-md-6 text-end">
+                <h5>Invoice Amount: ₹{{ order.total_amount }}</h5>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- SIGNATURE -->
+        <div class="row mt-4">
+            <div class="col-md-6 small-text">
+                <p>
+                    <strong>Declaration:</strong><br>
+                    We declare that this invoice shows the actual price of the goods described
+                    and that all particulars are true and correct.
+                </p>
+            </div>
+
+            <div class="col-md-6 text-end">
+                <p><strong>For ReTech Pvt Ltd</strong></p>
+                <div class="signature"></div>
+                <p class="small-text mt-2">Authorised Signatory</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <p class="text-center text-muted small-text">
+            Thank you for shopping with ReTech 🌱
+        </p>
+
+    </div>
+</div>
+
+</body>
+</html>

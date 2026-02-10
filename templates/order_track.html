@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Tracking | ReTech</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+body { background-color: #f5f7fa; }
+        .navbar-brand span { color: #28a745; font-weight: bold; }
+        .hero { padding: 40px 0; text-align: center; }
+        .hero h1 { font-weight: bold; }
+        .search-box { max-width: 900px; margin: 30px auto; }
+
+        .dropdown-hover { position: relative; }
+        .dropdown-hover:hover > .dropdown-menu { display: block; }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            z-index: 1000;
+        }
+
+        .product-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .seo-content {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            margin-top: 40px;
+        }
+
+        /* 🔥 ORDER TRACKER */
+.tracker {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    margin: 40px 0;
+}
+
+.tracker::before {
+    content: "";
+    position: absolute;
+    top: 22px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #dee2e6;
+    z-index: 0;
+}
+
+.tracker-step {
+    position: relative;
+    text-align: center;
+    flex: 1;
+    z-index: 1;
+}
+
+.tracker-circle {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: #dee2e6;
+    color: #fff;
+    font-size: 20px;
+    line-height: 45px;
+    margin: auto;
+    transition: all 0.3s ease;
+}
+
+.tracker-active .tracker-circle {
+    background: linear-gradient(135deg, #28a745, #5dd39e);
+    box-shadow: 0 0 12px rgba(40,167,69,0.6);
+}
+
+.tracker-active p {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.tracker-step small {
+    display: block;
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 4px;
+}
+
+.tracker-cancelled .tracker-circle {
+    background: #dc3545;
+    box-shadow: 0 0 12px rgba(220,53,69,0.6);
+}
+
+.tracker-cancelled p {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+
+    </style>
+</head>
+
+<body>
+
+
+<!-- 🔹 HEADER -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/">Re<span>Tech</span></a>
+
+        <div class="ms-auto">
+            <div class="dropdown-hover d-inline-block position-relative">
+                <span class="fw-bold text-primary">👤 {{ session.user.name }}</span>
+
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                    <li><a class="dropdown-item" href="/address">Address</a></li>
+                    <li><a class="dropdown-item" href="/orders">My Orders</a></li>
+                    <li><a class="dropdown-item" href="/cart">Add To Cart</a></li>
+                    <li><a class="dropdown-item" href="/chat-support">Chat Support</a></li>
+                    <li><a class="dropdown-item" href="/change_password">Change Password</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+
+<!-- 🔹 ORDER TRACKING -->
+<div class="container mt-5">
+
+    <div class="card shadow p-4">
+        <h4 class="mb-3">📦 Order Tracking</h4>
+
+        <p class="text-muted mb-4">
+            <strong>Order ID:</strong> {{ order.id }} |
+            <strong>Placed on:</strong> {{ order.created_at.strftime("%d %b %Y") }}
+        </p>
+
+        <!-- 🔹 TRACKER -->
+        {% set steps = ['Placed', 'Shipped', 'Completed','Cancelled'] %}
+
+<div class="d-flex mb-5 justify-content-between">
+
+    {% for step in steps %}
+    <div class="tracker-step
+        {% if steps.index(step) <= steps.index(order.status)
+              and order.status != 'Cancelled' %}
+            tracker-active
+        {% endif %}
+    ">
+        <div class="tracker-circle">
+            {% if steps.index(step) <= steps.index(order.status)
+                  and order.status != 'Cancelled' %}
+                ✓
+            {% else %}
+                •
+            {% endif %}
+        </div>
+
+        <p class="mt-2">{{ step }}</p>
+
+        <small class="text-muted">
+            {% if step == 'Placed' %}
+                {{ order.created_at.strftime("%d %b") }}
+            {% elif step == 'Shipped' and order.shipped_at %}
+                {{ order.shipped_at.strftime("%d %b") }}
+            {% elif step == 'Completed' and order.completed_at %}
+                {{ order.completed_at.strftime("%d %b") }}
+            {% elif step == 'Cancelled' and order.cancelled_at %}
+                {{ order.cancelled_at.strftime("%d %b") }}
+            {% endif %}
+        </small>
+    </div>
+    {% endfor %}
+
+    {% if order.status == 'Cancelled' %}
+    <div class="tracker-step tracker-cancelled">
+        <div class="tracker-circle">✕</div>
+        <p class="mt-2">Cancelled</p>
+        <small class="text-muted">
+            {{ order.cancelled_at.strftime("%d %b") if order.cancelled_at else '' }}
+        </small>
+    </div>
+    {% endif %}
+
+</div>
+
+
+        {% if order.status not in ["Shipped","Completed", "Cancelled"] %}
+<hr class="my-4">
+
+<div class="card border-danger p-4">
+    <h5 class="text-danger mb-3">❌ Cancel Order</h5>
+
+    <form method="post" action="/order/cancel/{{ order.id }}"
+          onsubmit="return confirm('Are you sure you want to cancel this order?');">
+
+        <p class="text-muted">Please select reason(s):</p>
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="reason" value="Ordered by mistake">
+            <label class="form-check-label">✔ Ordered by mistake</label>
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="reason" value="Found cheaper elsewhere">
+            <label class="form-check-label">✔ Found cheaper elsewhere</label>
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="reason" value="Delivery taking too long">
+            <label class="form-check-label">✔ Delivery taking too long</label>
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="reason" value="Changed my mind">
+            <label class="form-check-label">✔ Changed my mind</label>
+        </div>
+
+        <button class="btn btn-danger mt-3">
+            Cancel Order
+        </button>
+    </form>
+</div>
+{% endif %}
+
+
+        <!-- 🔹 ORDER SUMMARY -->
+        <h5>🧾 Order Summary</h5>
+        <ul class="list-group mb-4">
+            {% for item in items %}
+            <li class="list-group-item d-flex justify-content-between">
+                {{ item.product_name }} (x{{ item.quantity }})
+                <span>₹{{ item.price }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <p class="fw-bold text-end">
+            Total: ₹{{ order.total_amount }}
+        </p>
+
+        <!-- 🔹 INVOICE (ONLY IF COMPLETED) -->
+        {% if order.status == 'Completed' %}
+        <div class="alert alert-success mt-4">
+            ✅ Order completed successfully.
+
+            <div class="mt-3">
+               <a href="/invoice/{{ order.id }}" class="btn btn-outline-primary btn-sm">
+                    🧾 View Invoice
+               </a>
+
+            </div>
+        </div>
+        {% endif %}
+
+        {% if order.status == 'Cancelled' %}
+        <div class="alert alert-danger mt-4">
+            ❌ This order has been cancelled.
+        </div>
+        {% endif %}
+
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="/orders" class="btn btn-outline-secondary btn-sm">← Back to My Orders</a>
+    </div>
+
+</div>
+
+<!-- 🔹 FOOTER -->
+<footer>
+    <div class="container">
+        <p class="mb-1">© 2026 ReTech. All rights reserved.</p>
+        <small>Buy Smart. Buy Refurbished 🌱</small>
+    </div>
+</footer>
+
+<script>
+function printInvoice() {
+    window.print();
+}
+</script>
+
+
+</body>
+</html>
