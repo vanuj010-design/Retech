@@ -7,7 +7,7 @@ from db import get_db
 from email_otp import send_otp
 
 app = Flask(__name__, template_folder="templates")
-app.secret_key = "retech_secret_key"
+app.secret_key = os.environ.get("SECRET_KEY")
 CORS(app)
 
 # ================= ADMIN AUTH HELPER =================
