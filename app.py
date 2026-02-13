@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify, render_template, redirect, session, f
 from flask_cors import CORS
 import bcrypt, random, time, os
 from werkzeug.utils import secure_filename
+import mysql.connector
+from urllib.parse import urlparse
 
 from db import get_db
 from email_otp import send_otp
@@ -9,6 +11,38 @@ from email_otp import send_otp
 app = Flask(__name__, template_folder="templates")
 app.secret_key = os.environ.get("SECRET_KEY")
 CORS(app)
+
+# ---------- DATABASE CONNECTION ----------
+def get_db():
+    url = urlparse(os.environ["DATABASE_URL"])
+    return mysql.connector.connect(
+        host=url.hostname,
+        user=url.username,
+        password=url.password,
+        database=url.path.lstrip("/"),
+        port=url.port,
+        connection_timeout=10,
+        ssl_disabled=False
+    )
+
+# ---------- TEST ROUTE ----------
+@app.route("/")
+def home():
+    return "Flask app is running ✅"
+
+@app.route("/db-test")
+def db_test():
+    try:
+        db = get_db()
+        cur = db.cursor()
+        cur.execute("SELECT DATABASE()")
+        result = cur.fetchone()
+        cur.close()
+        db.close()
+        return f"MySQL Connected ✅ Database: {result[0]}"
+    except Exception as e:
+        return f"DB Error ❌ {str(e)}"
+
 
 # ================= ADMIN AUTH HELPER =================
 from functools import wraps
