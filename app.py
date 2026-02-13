@@ -14,18 +14,24 @@ CORS(app)
 
 # ---------- DATABASE CONNECTION ----------
 def get_db():
-    url = urlparse(os.environ["DATABASE_URL"])
+    url = os.environ.get("DATABASE_URL")
+    if not url:
+        raise Exception("DATABASE_URL not set")
+
+    parsed = urlparse(url)
+
     return mysql.connector.connect(
-        host=url.hostname,
-        user=url.username,
-        password=url.password,
-        database=url.path.lstrip("/"),
-        port=url.port,
-        connection_timeout=10,
+        host=parsed.hostname,
+        user=parsed.username,
+        password=parsed.password,
+        database=parsed.path.lstrip("/"),
+        port=parsed.port,
+        connection_timeout=5,
+        autocommit=True,
         ssl_disabled=False
     )
 
-# ---------- TEST ROUTE ----------
+# ---------------- ROUTES ----------------
 @app.route("/")
 def home():
     return "Flask app is running ✅"
@@ -39,9 +45,14 @@ def db_test():
         result = cur.fetchone()
         cur.close()
         db.close()
+
         return f"MySQL Connected ✅ Database: {result[0]}"
+
+    except mysql.connector.Error as e:
+        return f"MySQL Error ❌ {e}"
+
     except Exception as e:
-        return f"DB Error ❌ {str(e)}"
+        return f"App Error ❌ {e}"
 
 
 # ================= ADMIN AUTH HELPER =================
