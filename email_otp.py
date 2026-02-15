@@ -1,33 +1,36 @@
+import os
 import smtplib
 from email.mime.text import MIMEText
 
-SENDER_EMAIL = "vermaalka705@gmail.com"
-APP_PASSWORD = "gpdhqmxgviotfhmy"  # Gmail App Password
+SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
+SMTP_EMAIL = os.environ.get("SMTP_EMAIL")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
 
+
+# ================= OTP MAIL =================
 def send_otp(receiver_email, otp):
     msg = MIMEText(f"Your ReTech OTP is {otp}. It is valid for 2 minutes.")
     msg["Subject"] = "ReTech Account Verification OTP"
-    msg["From"] = SENDER_EMAIL
+    msg["From"] = SMTP_EMAIL
     msg["To"] = receiver_email
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(SENDER_EMAIL, APP_PASSWORD)
-        server.send_message(msg)
+    server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
+    server.starttls()
+    server.login(SMTP_EMAIL, SMTP_PASSWORD)
+    server.send_message(msg)
+    server.quit()
 
 
-from email.mime.text import MIMEText
-
-ADMIN_EMAIL = "vermaalka705@gmail.com"     # 🔴 your gmail
-APP_PASSWORD = "gpdhqmxgviotfhmy"      # 🔴 Gmail App Password
-
+# ================= SUPPORT MAIL =================
 def send_support_mail(subject, message):
     msg = MIMEText(message)
     msg["Subject"] = subject
-    msg["From"] = ADMIN_EMAIL
-    msg["To"] = ADMIN_EMAIL
+    msg["From"] = SMTP_EMAIL
+    msg["To"] = SMTP_EMAIL
 
-    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
     server.starttls()
-    server.login(ADMIN_EMAIL, APP_PASSWORD)
+    server.login(SMTP_EMAIL, SMTP_PASSWORD)
     server.send_message(msg)
     server.quit()
