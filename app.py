@@ -15,7 +15,7 @@ app = Flask(__name__, template_folder="templates")
 app.secret_key = os.environ.get("SECRET_KEY")
 CORS(app)
 
- SAFE DB INIT
+ 
 with app.app_context():
     init_tables()
 
