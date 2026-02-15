@@ -3,8 +3,7 @@ from flask_cors import CORS
 import bcrypt, random, time, os
 from werkzeug.utils import secure_filename
 import mysql.connector
-from urllib.parse import urlparse
-from db import init_tables
+from db import get_db, init_tables
 
 from email_otp import send_otp
 
@@ -12,8 +11,9 @@ init_tables()
 
 
 app = Flask(__name__, template_folder="templates")
-app.secret_key = os.environ.get("SECRET_KEY")
+app.secret_key = os.environ.get("SECRET_KEY", "retech_secret")
 CORS(app)
+
 
  
 with app.app_context():
@@ -88,8 +88,7 @@ otp_store = {}
 from flask import Flask, render_template, request, session, redirect, jsonify
 import random, time, bcrypt
 
-app = Flask(__name__)
-app.secret_key = "retech_secret"
+
 
 OTP_EXPIRY = 300  # 5 minutes
 change_pwd_otp_store = {}
