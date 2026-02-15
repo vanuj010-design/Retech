@@ -20,8 +20,8 @@ def get_db():
 
 def init_tables():
 
-    db=get_db
-    cur=db.cursor
+    db=get_db()
+    cur=db.cursor()
 
     cur.execute("""create table if not exist users (id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(100),
