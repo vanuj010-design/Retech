@@ -6,7 +6,6 @@ import mysql.connector
 from urllib.parse import urlparse
 from db import init_tables
 
-from db import get_db
 from email_otp import send_otp
 
 init_tables()
@@ -15,6 +14,10 @@ init_tables()
 app = Flask(__name__, template_folder="templates")
 app.secret_key = os.environ.get("SECRET_KEY")
 CORS(app)
+
+ SAFE DB INIT
+with app.app_context():
+    init_tables()
 
 # ---------- DATABASE CONNECTION ----------
 def get_db():
