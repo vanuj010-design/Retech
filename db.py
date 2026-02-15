@@ -1,6 +1,7 @@
 import os
 import mysql.connector
 from mysql.connector import pooling
+from contextlib import contextmanager
 
 # ---------- CONNECTION POOL ----------
 dbconfig = {
@@ -17,12 +18,25 @@ if missing:
 
 pool = pooling.MySQLConnectionPool(
     pool_name="retech_pool",
-    pool_size=5,
+    pool_size=10,
     **dbconfig
 )
 
+
 def get_db():
     return pool.get_connection()
+
+
+@contextmanager
+def db_cursor(dictionary=False):
+    db = get_db()
+    cur = db.cursor(dictionary=dictionary)
+    try:
+        yield cur
+        db.commit()
+    finally:
+        cur.close()
+        db.close()
 
 
 # ---------- CREATE TABLES ----------
