@@ -1659,8 +1659,10 @@ def invoice(order_id):
 
 # ==================PDF download ==================
 
-@app.route("/invoice/<int:order_id>")
-def invoice_page(order_id):
+# ================== PDF download ==================
+
+@app.route("/invoice/<int:order_id>/pdf")
+def invoice_pdf(order_id):
 
     if "user" not in session:
         return redirect("/login")
@@ -1700,7 +1702,6 @@ def invoice_page(order_id):
         WHERE oi.order_id=%s
     """, (order_id,))
     items = cur.fetchall()
-    print("INVOICE ITEMS:", items)
 
     return render_template(
         "invoice.html",
