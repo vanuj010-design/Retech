@@ -3,20 +3,15 @@ import mysql.connector
 from urllib.parse import urlparse
 
 def get_db():
-    url = os.environ.get("DATABASE_URL")
-    if not url:
-        raise RuntimeError("DATABASE_URL not set")
-
-    parsed = urlparse(url)
-
     return mysql.connector.connect(
-        host=parsed.hostname,
-        user=parsed.username,
-        password=parsed.password,
-        database=parsed.path.lstrip("/"),
-        port=parsed.port,
+        host=os.environ.get("MYSQL_HOST"),
+        user=os.environ.get("MYSQL_USER"),
+        password=os.environ.get("MYSQL_PASSWORD"),
+        database=os.environ.get("MYSQL_DATABASE"),
+        port=int(os.environ.get("MYSQL_PORT", 3306)),
         autocommit=True
     )
+
 
 def init_tables():
 
