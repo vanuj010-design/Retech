@@ -1,76 +1,43 @@
 import os
 import mysql.connector
+from mysql.connector import pooling
 
-import mysql.connector
+# ---------- CONNECTION POOL (RENDER SAFE) ----------
+dbconfig = {
+    "host": os.environ.get("MYSQLHOST"),
+    "port": int(os.environ.get("MYSQLPORT", 3306)),
+    "user": os.environ.get("MYSQLUSER"),
+    "password": os.environ.get("MYSQLPASSWORD"),
+    "database": os.environ.get("MYSQLDATABASE"),
+}
 
+# Validate env vars early (helps debugging on Render)
+missing = [k for k, v in dbconfig.items() if v is None]
+if missing:
+    raise RuntimeError(f"MySQL ENV vars missing: {missing}")
 
+pool = pooling.MySQLConnectionPool(
+    pool_name="retech_pool",
+    pool_size=5,
+    **dbconfig
+)
+
+# ---------- GET DB ----------
 def get_db():
-    host = os.environ.get("MYSQLHOST")
-    user = os.environ.get("MYSQLUSER")
-    password = os.environ.get("MYSQLPASSWORD")
-    database = os.environ.get("MYSQLDATABASE")
-    port = int(os.environ.get("MYSQLPORT", 3306))
+    return pool.get_connection()
 
-    if not host:
-        raise RuntimeError("MYSQLHOST not set")
-
-    return mysql.connector.connect(
-        host=host,
-        user=user,
-        password=password,
-        database=database,
-        port=port
-    )
-
+# ---------- INIT TABLES (SAFE TO CALL) ----------
 def init_tables():
     db = get_db()
     cur = db.cursor()
 
+    # Example minimal safety table (your real tables already exist)
     cur.execute("""
-    CREATE TABLE IF NOT EXISTS users (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(100),
-        phone VARCHAR(15),
-        gender VARCHAR(10),
-        age INT,
-        email VARCHAR(100) UNIQUE,
-        password VARCHAR(255),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-    """)
-
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS products (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        product_name VARCHAR(150),
-        brand VARCHAR(50),
-        model_number VARCHAR(50),
-        price INT,
-        ram VARCHAR(20),
-        rom VARCHAR(20),
-        color VARCHAR(30),
-        operating_system VARCHAR(50),
-        display_type VARCHAR(50),
-        resolution VARCHAR(30),
-        refresh_rate VARCHAR(20),
-        launch_year INT,
-        product_condition VARCHAR(30),
-        image_url VARCHAR(255),
-        stock INT DEFAULT 0,
-        is_active TINYINT DEFAULT 1
-    )
-    """)
-
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS cart (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT,
-        product_id INT,
-        quantity INT DEFAULT 1,
-        added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
-    )
+        CREATE TABLE IF NOT EXISTS admins (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            admin_id VARCHAR(100) UNIQUE,
+            password VARCHAR(255)
+        )
     """)
 
     db.commit()
