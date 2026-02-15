@@ -7,7 +7,7 @@ from db import get_db, init_tables
 
 from email_otp import send_otp
 
-init_tables()
+
 
 
 app = Flask(__name__, template_folder="templates")
@@ -19,29 +19,9 @@ CORS(app)
 with app.app_context():
     init_tables()
 
-# ---------- DATABASE CONNECTION ----------
-def get_db():
-    url = os.environ.get("DATABASE_URL")
-    if not url:
-        raise Exception("DATABASE_URL not set")
-
-    parsed = urlparse(url)
-
-    return mysql.connector.connect(
-        host=parsed.hostname,
-        user=parsed.username,
-        password=parsed.password,
-        database=parsed.path.lstrip("/"),
-        port=parsed.port,
-        connection_timeout=5,
-        autocommit=True,
-        ssl_disabled=False
-    )
 
 # ---------------- ROUTES ----------------
-@app.route("/")
-def home():
-    return "Flask app is running ✅"
+
 
 @app.route("/db-test")
 def db_test():
