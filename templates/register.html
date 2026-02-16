@@ -60,7 +60,16 @@ function signup() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
     })
-    .then(res => res.json())
+    .then(async res => {
+    const text = await res.text();
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        console.error("Server response (not JSON):", text);
+        throw new Error("Server error");
+    }
+})
+
     .then(res => {
         if (res.success) {
             // IMPORTANT: correct key name

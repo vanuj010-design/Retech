@@ -36,7 +36,7 @@ def admin_ip_required(func):
 
 app = Flask(__name__, template_folder="templates")
 app.secret_key = os.environ.get("SECRET_KEY", "retech_secret")
-CORS(app)
+CORS(app)   
 
 
  
@@ -324,44 +324,58 @@ def register_page():
 # 🔹 SIGNUP (SEND OTP)
 @app.route("/signup", methods=["POST"])
 def signup():
-    data = request.json
+    try:
+        data = request.get_json(force=True)  # ✅ safe JSON read
 
-    name = data.get("name")
-    phone = data.get("phone")
-    gender = data.get("gender")
-    age = data.get("age")
-    email = data.get("email")
-    password = data.get("password")
-    confirm_password = data.get("confirm_password")
+        name = data.get("name")
+        phone = data.get("phone")
+        gender = data.get("gender")
+        age = data.get("age")
+        email = data.get("email")
+        password = data.get("password")
+        confirm_password = data.get("confirm_password")
 
-    # basic validation
-    if not all([name, phone, gender, age, email, password, confirm_password]):
-        return jsonify({"success": False, "message": "All fields are required"})
+        if not all([name, phone, gender, age, email, password, confirm_password]):
+            return jsonify({"success": False, "message": "All fields are required"}), 400
 
-    if password != confirm_password:
-        return jsonify({"success": False, "message": "Passwords do not match"})
+        if password != confirm_password:
+            return jsonify({"success": False, "message": "Passwords do not match"}), 400
 
-    db = get_db()
-    cur = db.cursor()
+        db = get_db()
+        cur = db.cursor()
 
-    # check existing user
-    cur.execute("SELECT id FROM users WHERE email=%s", (email,))
-    if cur.fetchone():
-        return jsonify({"success": False, "message": "Email already registered"})
+        cur.execute("SELECT id FROM users WHERE email=%s", (email,))
+        if cur.fetchone():
+            cur.close()
+            db.close()
+            return jsonify({"success": False, "message": "Email already registered"}), 409
 
-    # generate OTP
-    otp = str(random.randint(100000, 999999))
+        otp = str(random.randint(100000, 999999))
 
-    signup_otp_store[email] = {
-        "otp": otp,
-        "data": data,
-        "time": time.time()
-    }
+        signup_otp_store[email] = {
+            "otp": otp,
+            "data": data,
+            "time": time.time()
+        }
 
-    # send OTP to email
-    send_otp(email, otp)
+        # 🔥 SEND OTP SAFELY
+        try:
+            send_otp(email, otp)
+        except Exception as e:
+            print("EMAIL ERROR:", e)
+            cur.close()
+            db.close()
+            return jsonify({"success": False, "message": "Failed to send OTP"}), 500
 
-    return jsonify({"success": True})
+        cur.close()
+        db.close()
+
+        return jsonify({"success": True}), 200
+
+    except Exception as e:
+        print("SIGNUP ERROR:", e)
+        return jsonify({"success": False, "message": "Server error"}), 500
+
 
 
 # 🔹 VERIFY OTP PAGE (YOU ALREADY HAVE verify_otp.html)
