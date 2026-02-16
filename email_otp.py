@@ -10,27 +10,47 @@ SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
 
 # ================= OTP MAIL =================
 def send_otp(receiver_email, otp):
-    msg = MIMEText(f"Your ReTech OTP is {otp}. It is valid for 2 minutes.")
-    msg["Subject"] = "ReTech Account Verification OTP"
-    msg["From"] = SMTP_EMAIL
-    msg["To"] = receiver_email
+    if not SMTP_EMAIL or not SMTP_PASSWORD:
+        raise RuntimeError("SMTP credentials missing")
 
-    server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
-    server.starttls()
-    server.login(SMTP_EMAIL, SMTP_PASSWORD)
-    server.send_message(msg)
-    server.quit()
+    try:
+        msg = MIMEText(f"Your ReTech OTP is {otp}. It is valid for 5 minutes.")
+        msg["Subject"] = "ReTech Account Verification OTP"
+        msg["From"] = SMTP_EMAIL
+        msg["To"] = receiver_email
+
+        server = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10)
+        server.starttls()
+        server.login(SMTP_EMAIL, SMTP_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+
+        print("OTP sent to:", receiver_email)
+
+    except Exception as e:
+        print("SMTP OTP ERROR:", e)
+        raise
 
 
 # ================= SUPPORT MAIL =================
 def send_support_mail(subject, message):
-    msg = MIMEText(message)
-    msg["Subject"] = subject
-    msg["From"] = SMTP_EMAIL
-    msg["To"] = SMTP_EMAIL
+    if not SMTP_EMAIL or not SMTP_PASSWORD:
+        raise RuntimeError("SMTP credentials missing")
 
-    server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
-    server.starttls()
-    server.login(SMTP_EMAIL, SMTP_PASSWORD)
-    server.send_message(msg)
-    server.quit()
+    try:
+        msg = MIMEText(message)
+        msg["Subject"] = subject
+        msg["From"] = SMTP_EMAIL
+        msg["To"] = SMTP_EMAIL
+
+        server = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10)
+        server.starttls()
+        server.login(SMTP_EMAIL, SMTP_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+
+        print("Support mail sent")
+
+    except Exception as e:
+        print("SMTP SUPPORT ERROR:", e)
+        raise
