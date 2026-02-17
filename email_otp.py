@@ -1,56 +1,30 @@
 import os
-import smtplib
-from email.mime.text import MIMEText
+import requests
 
-SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
-SMTP_EMAIL = os.environ.get("SMTP_EMAIL")
-SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
+SENDER_EMAIL = os.environ.get("EMAIL_SENDER")
 
-
-# ================= OTP MAIL =================
 def send_otp(receiver_email, otp):
-    if not SMTP_EMAIL or not SMTP_PASSWORD:
-        raise RuntimeError("SMTP credentials missing")
+    url = "https://api.brevo.com/v3/smtp/email"
 
-    try:
-        msg = MIMEText(f"Your ReTech OTP is {otp}. It is valid for 5 minutes.")
-        msg["Subject"] = "ReTech Account Verification OTP"
-        msg["From"] = SMTP_EMAIL
-        msg["To"] = receiver_email
+    payload = {
+        "sender": {"email": SENDER_EMAIL, "name": "ReTech"},
+        "to": [{"email": receiver_email}],
+        "subject": "ReTech Account Verification OTP",
+        "htmlContent": f"""
+            <h2>Your ReTech OTP</h2>
+            <p><b>{otp}</b></p>
+            <p>This OTP is valid for 2 minutes.</p>
+        """
+    }
 
-        server = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10)
-        server.starttls()
-        server.login(SMTP_EMAIL, SMTP_PASSWORD)
-        server.send_message(msg)
-        server.quit()
+    headers = {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json"
+    }
 
-        print("OTP sent to:", receiver_email)
+    response = requests.post(url, json=payload, headers=headers)
 
-    except Exception as e:
-        print("SMTP OTP ERROR:", e)
-        raise
-
-
-# ================= SUPPORT MAIL =================
-def send_support_mail(subject, message):
-    if not SMTP_EMAIL or not SMTP_PASSWORD:
-        raise RuntimeError("SMTP credentials missing")
-
-    try:
-        msg = MIMEText(message)
-        msg["Subject"] = subject
-        msg["From"] = SMTP_EMAIL
-        msg["To"] = SMTP_EMAIL
-
-        server = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10)
-        server.starttls()
-        server.login(SMTP_EMAIL, SMTP_PASSWORD)
-        server.send_message(msg)
-        server.quit()
-
-        print("Support mail sent")
-
-    except Exception as e:
-        print("SMTP SUPPORT ERROR:", e)
-        raise
+    if response.status_code not in (200, 201):
+        raise Exception(response.text)
