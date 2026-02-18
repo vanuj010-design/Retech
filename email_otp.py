@@ -1,29 +1,36 @@
 import os
-import smtplib
-from email.mime.text import MIMEText
+import requests
 
-SMTP_HOST = os.environ.get("SMTP_HOST")
-SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
-SMTP_LOGIN = os.environ.get("SMTP_EMAIL")
-SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
 FROM_EMAIL = os.environ.get("FROM_EMAIL")
 
-FROM_EMAIL = "ReTech <vermaalka705@gmail.com>"
-
 def send_otp(receiver_email, otp):
-    print("DEBUG → Sending OTP")
-    print("DEBUG → To:", receiver_email)
-    print("DEBUG → From:", FROM_EMAIL)
+    url = "https://api.brevo.com/v3/smtp/email"
 
-    msg = MIMEText(f"Your ReTech OTP is {otp}. It is valid for 5 minutes.")
-    msg["Subject"] = "ReTech Account Verification OTP"
-    msg["From"] = FROM_EMAIL
-    msg["To"] = receiver_email
+    payload = {
+        "sender": {
+            "email": FROM_EMAIL,
+            "name": "ReTech"
+        },
+        "to": [
+            {"email": receiver_email}
+        ],
+        "subject": "ReTech OTP Verification",
+        "htmlContent": f"""
+            <h3>Your ReTech OTP</h3>
+            <p><strong>{otp}</strong></p>
+            <p>This OTP is valid for 5 minutes.</p>
+        """
+    }
 
-    server = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30)
-    server.ehlo()
-    server.starttls()
-    server.ehlo()
-    server.login(SMTP_LOGIN, SMTP_PASSWORD)
-    server.sendmail(FROM_EMAIL, receiver_email, msg.as_string())
-    server.quit()
+    headers = {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json"
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+
+    if response.status_code not in (200, 201):
+        print("BREVO API ERROR:", response.text)
+        raise Exception("Failed to send OTP")
