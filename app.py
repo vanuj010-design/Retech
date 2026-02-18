@@ -38,6 +38,15 @@ app = Flask(__name__, template_folder="templates")
 app.secret_key = os.environ.get("SECRET_KEY", "retech_secret")
 CORS(app)   
 
+@app.route("/smtp-debug")
+def smtp_debug():
+    return {
+        "SMTP_HOST": os.environ.get("SMTP_HOST"),
+        "SMTP_PORT": os.environ.get("SMTP_PORT"),
+        "SMTP_EMAIL": os.environ.get("SMTP_EMAIL"),
+        "FROM_EMAIL": os.environ.get("FROM_EMAIL"),
+        "SMTP_PASSWORD_SET": bool(os.environ.get("SMTP_PASSWORD"))
+    }
 
  
 with app.app_context():
