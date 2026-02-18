@@ -8,7 +8,13 @@ SMTP_LOGIN = os.environ.get("SMTP_EMAIL")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
 FROM_EMAIL = os.environ.get("FROM_EMAIL")
 
+FROM_EMAIL = "ReTech <vermaalka705@gmail.com>"
+
 def send_otp(receiver_email, otp):
+    print("DEBUG → Sending OTP")
+    print("DEBUG → To:", receiver_email)
+    print("DEBUG → From:", FROM_EMAIL)
+
     msg = MIMEText(f"Your ReTech OTP is {otp}. It is valid for 5 minutes.")
     msg["Subject"] = "ReTech Account Verification OTP"
     msg["From"] = FROM_EMAIL
