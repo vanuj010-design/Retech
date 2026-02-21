@@ -147,6 +147,7 @@ def send_change_otp():
     send_otp(email, otp)
     print("CHANGE PASSWORD OTP:", otp)
 
+
     return jsonify({"status": "otp_sent"})
 
 
@@ -216,6 +217,10 @@ def home():
         """)
 
     products = cur.fetchall()
+
+    cur.close()
+    db.close()
+
 
     return render_template(
         "first.html",
@@ -300,6 +305,10 @@ def confirm_delete_account():
     uid = session["user_id"]
     session.clear()
     delete_otp_store.pop(uid, None)
+
+    cur.close()
+    db.close()
+
 
     return jsonify(success=True)
 
@@ -443,6 +452,9 @@ def verify_otp():
     # clear OTP record
     signup_otp_store.pop(email, None)
 
+    cur.close()
+    db.close()
+
     return jsonify({"success": True})
 
 
@@ -480,7 +492,12 @@ def login_api():
             "name": user["name"],
             "email": user["email"]
         }
+        cur.close()
+        db.close()
         return jsonify(success=True)
+
+    cur.close()
+    db.close()
 
     return jsonify(success=False, message="Wrong password")
 
@@ -523,6 +540,9 @@ def profile():
     """, (user_id,))
 
     user = cur.fetchone()
+
+    cur.close()
+    db.close()
 
     return render_template("profile.html", user=user)
 
@@ -609,6 +629,9 @@ def address():
         )
         edit_address = cur.fetchone()
 
+    cur.close()
+    db.close()
+
     return render_template("address.html", addresses=addresses, edit_address=edit_address)
 
 # ================== PRODUCT DETAIL PAGE ==================
@@ -622,8 +645,12 @@ def product_detail(product_id):
     product = cur.fetchone()
 
     if not product:
+        cur.close()
+        db.close()
         return "Product not found", 404
 
+    cur.close()
+    db.close()
     # 🔥 IMPORTANT: render YOUR existing template
     return render_template("product_detail.html", product=product)
 
@@ -650,6 +677,8 @@ def add_to_cart(product_id):
     product = cur.fetchone()
 
     if not product or product["stock"] <= 0:
+        cur.close()
+        db.close()
         return redirect("/")
 
     # 🔍 Check if already in cart
@@ -670,6 +699,9 @@ def add_to_cart(product_id):
             (user_id, product_id)
         )
         db.commit()
+        cur.close()
+        db.close()
+
         return redirect("/checkout")
 
     # 🛒 NORMAL ADD TO CART FLOW
@@ -685,6 +717,9 @@ def add_to_cart(product_id):
         )
 
     db.commit()
+    cur.close()
+    db.close()
+
     return redirect("/cart")
 
 
@@ -711,6 +746,9 @@ def view_cart():
     """, (user_id,))
     items = cur.fetchall()
 
+    cur.close()
+    db.close()
+
     return render_template("cart.html", cart_items=items)
 
 
@@ -728,6 +766,8 @@ def delete_cart_item(cart_id):
         (cart_id, user_id)
     )
     db.commit()
+    cur.close()
+    db.close()
     return redirect("/cart")
 
 
@@ -764,6 +804,8 @@ def cart_increase(cart_id):
         (cart_id,)
     )
     db.commit()
+    cur.close()
+    db.close()
 
     return redirect("/cart")
 
@@ -800,6 +842,8 @@ def cart_decrease(cart_id):
         )
 
     db.commit()
+    cur.close()
+    db.close()
     return redirect("/cart")
 
 
@@ -889,6 +933,8 @@ def checkout():
         WHERE user_id=%s AND is_default=1
     """, (user_id,))
     address = cur.fetchone()
+    cur.close()
+    db.close()
 
     return render_template("checkout.html",
         cart_items=cart_items,
@@ -918,6 +964,8 @@ def place_order():
     cart_items = cur.fetchall()
 
     if not cart_items:
+        cur.close()
+        db.close()
         flash("Your cart is empty")
         return redirect("/cart")
 
@@ -966,6 +1014,8 @@ def place_order():
 
     cur.execute("DELETE FROM cart WHERE user_id=%s", (user_id,))
     db.commit()
+    cur.close()
+    db.close()
 
     return redirect("/orders")
 
@@ -987,6 +1037,8 @@ def orders():
         ORDER BY created_at DESC
     """, (user_id,))
     orders = cur.fetchall()
+    cur.close()
+    db.close()
 
     return render_template("orders.html", orders=orders)
 
@@ -1019,6 +1071,8 @@ def order_detail(order_id):
         WHERE oi.order_id=%s
     """, (order_id,))
     items = cur.fetchall()
+    cur.close()
+    db.close()
 
     return render_template("order_detail.html", order=order, items=items)
 
@@ -1112,6 +1166,8 @@ def verify_change_password():
         (hashed_password, email)
     )
     db.commit()
+    cur.close()
+    db.close()
 
     change_pwd_otp_store.pop(email, None)
 
@@ -1151,6 +1207,8 @@ def admin_login():
     session.clear()
     session["admin_id"] = admin["id"]
     session["admin_name"] = admin["admin_id"]
+    cur.close()
+    db.close()
 
     return jsonify({"success": True})
 
@@ -1207,6 +1265,8 @@ def admin_dashboard():
     # Products list
     cur.execute("SELECT * FROM products ORDER BY id DESC")
     products = cur.fetchall()
+    cur.close()
+    db.close()
 
     return render_template(
         "admin_dashboard.html",
@@ -1235,6 +1295,8 @@ def admin_pending_orders():
         ORDER BY o.created_at DESC
     """)
     orders = cur.fetchall()
+    cur.close()
+    db.close()
 
     return render_template(
         "admin_orders.html",
@@ -1259,6 +1321,8 @@ def admin_completed_orders():
         ORDER BY o.created_at DESC
     """)
     orders = cur.fetchall()
+    cur.close()
+    db.close()
 
     return render_template(
         "admin_orders.html",
@@ -1291,6 +1355,7 @@ def admin_order_detail(order_id):
 
         db.commit()
 
+
     # Order
     cur.execute("""
         SELECT o.*, u.name, u.email
@@ -1320,6 +1385,8 @@ def admin_order_detail(order_id):
         ORDER BY changed_at DESC
     """, (order_id,))
     history = cur.fetchall()
+    cur.close()
+    db.close()
 
     return render_template(
         "admin_order_detail.html",
@@ -1345,6 +1412,8 @@ def admin_users():
         ORDER BY created_at DESC
     """)
     users = cur.fetchall()
+    cur.close()
+    db.close()
 
     return render_template("admin_users.html", users=users)
 
@@ -1366,6 +1435,8 @@ def admin_cart():
         ORDER BY c.added_at DESC
     """)
     cart_items = cur.fetchall()
+    cur.close()
+    db.close()
 
     return render_template("admin_cart.html", cart_items=cart_items)
 
@@ -1395,31 +1466,35 @@ def admin_add_product():
     cur = db.cursor()
 
     cur.execute("""
-    INSERT INTO products (
-        product_name, brand, model_number, price,
-        ram, rom, color, operating_system,
-        display_type, resolution, refresh_rate,
-        launch_year, product_condition, image_url,
-        stock, is_active
-    ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,1)
-""", (
-    request.form["product_name"],
-    request.form["brand"],
-    request.form["model_number"],
-    request.form["price"],
-    request.form["ram"],
-    request.form["rom"],
-    request.form["color"],
-    request.form["operating_system"],
-    request.form["display_type"],
-    request.form["resolution"],
-    request.form["refresh_rate"],
-    request.form["launch_year"],
-    request.form["condition"],
-    filename,
-    request.form["stock"]
-))
+        INSERT INTO products (
+            product_name, brand, model_number, price,
+            ram, rom, color, operating_system,
+            display_type, resolution, refresh_rate,
+            launch_year, product_condition, image_url,
+            stock, is_active
+        ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,1)
+    """, (
+        request.form["product_name"],
+        request.form["brand"],
+        request.form["model_number"],
+        request.form["price"],
+        request.form["ram"],
+        request.form["rom"],
+        request.form["color"],
+        request.form["operating_system"],
+        request.form["display_type"],
+        request.form["resolution"],
+        request.form["refresh_rate"],
+        request.form["launch_year"],
+        request.form["condition"],
+        filename,
+        request.form["stock"]
+    ))
 
+    db.commit()
+    cur.close()
+    db.close()
+    return redirect("/admin/dashboard")
 
 # ================== Edit product (admin) ==================
 @app.route("/admin/edit-product/<int:product_id>", methods=["GET", "POST"])
@@ -1487,6 +1562,8 @@ def admin_edit_product(product_id):
     ))
 
     db.commit()
+    cur.close()
+    db.close()
     return redirect("/admin/dashboard")
 
 # ================== Delete product (Admin) ==================
@@ -1503,6 +1580,8 @@ def admin_delete_product(product_id):
         (product_id,)
     )
     db.commit()
+    cur.close()
+    db.close()
 
     return redirect("/admin/dashboard")
 
@@ -1543,6 +1622,8 @@ def user_order_detail(order_id):
         ORDER BY changed_at ASC
     """, (order_id,))
     history = cur.fetchall()
+    cur.close()
+    db.close()
 
     return render_template(
         "order_detail.html",
@@ -1588,6 +1669,8 @@ def order_track(order_id):
     """, (order_id,))
 
     items = cur.fetchall()
+    cur.close()
+    db.close()
 
     return render_template(
         "order_track.html",
@@ -1656,10 +1739,14 @@ def cancel_order(order_id):
         db.commit()  # ✅ VERY IMPORTANT
 
         flash("Order cancelled successfully")
+        cur.close()
+        db.close()
         return redirect(f"/order_track/{order_id}")
 
     except Exception as e:
         db.rollback()  # 🔥 RELEASE LOCKS
+        cur.close()
+        db.close()
         print("CANCEL ERROR:", e)
         flash("Something went wrong. Try again.")
         return redirect(f"/order_track/{order_id}")
@@ -1708,6 +1795,8 @@ def invoice(order_id):
         WHERE oi.order_id=%s
     """, (order_id,))
     items = cur.fetchall()
+    cur.close()
+    db.close()
 
     return render_template(
         "invoice.html",
@@ -1761,6 +1850,8 @@ def invoice_pdf(order_id):
         WHERE oi.order_id=%s
     """, (order_id,))
     items = cur.fetchall()
+    cur.close()
+    db.close()
 
     return render_template(
         "invoice.html",
