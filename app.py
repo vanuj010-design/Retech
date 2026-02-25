@@ -7,6 +7,13 @@ from db import get_db, init_tables
 from email_otp import send_otp
 from flask import abort
 
+
+
+
+app = Flask(__name__, template_folder="templates")
+app.secret_key = os.environ.get("SECRET_KEY", "retech_secret")
+CORS(app)   
+
 # ================= ADMIN IP SECURITY =================
 
 # Put YOUR real public IP here (example only)
@@ -27,11 +34,6 @@ def hide_admin_from_unauthorized_ips():
             abort(404)  # completely hide admin
 
 
-
-
-app = Flask(__name__, template_folder="templates")
-app.secret_key = os.environ.get("SECRET_KEY", "retech_secret")
-CORS(app)   
 
 @app.route("/smtp-debug")
 def smtp_debug():
