@@ -10,26 +10,21 @@ from flask import abort
 # ================= ADMIN IP SECURITY =================
 
 # Put YOUR real public IP here (example only)
-ALLOWED_ADMIN_IPS = set(
-    os.environ.get("ADMIN_ALLOWED_IPS", "").split(",")
-)
+ALLOWED_ADMIN_IPS = {
+    ip.strip()
+    for ip in os.environ.get("ADMIN_ALLOWED_IPS", "").split(",")
+    if ip.strip()
+}
 
-def admin_ip_required(func):
-    def wrapper(*args, **kwargs):
-        # Get real client IP (Render-safe)
+@app.before_request
+def hide_admin_from_unauthorized_ips():
+    if request.path.startswith("/admin"):
         ip = request.headers.get("X-Forwarded-For", request.remote_addr)
         if ip:
             ip = ip.split(",")[0].strip()
 
-        # Block if IP not allowed
         if ip not in ALLOWED_ADMIN_IPS:
-            abort(404)  # hide admin completely
-
-        return func(*args, **kwargs)
-
-    wrapper.__name__ = func.__name__
-    return wrapper
-
+            abort(404)  # completely hide admin
 
 
 
@@ -1180,13 +1175,11 @@ def verify_change_password():
 from flask import request, jsonify, session, render_template, redirect
 
 @app.route("/admin/login", methods=["GET"])
-@admin_ip_required
 def admin_login_page():
     return render_template("admin_login.html")
 
 
 @app.route("/admin/login", methods=["POST"])
-@admin_ip_required
 def admin_login():
 
     data = request.get_json()
@@ -1214,7 +1207,6 @@ def admin_login():
 
 
 @app.route("/admin/logout")
-@admin_ip_required
 def admin_logout():
     session.clear()
     return redirect("/admin/login")
@@ -1224,7 +1216,6 @@ def admin_logout():
 # ================== Dashboard(ADMIN) ==================
 
 @app.route("/admin/dashboard")
-@admin_ip_required
 @admin_required
 def admin_dashboard():
     db = get_db()
@@ -1281,7 +1272,6 @@ def admin_dashboard():
 # ================== Pending Orders(Admin) ==================
 
 @app.route("/admin/orders/pending")
-@admin_ip_required
 @admin_required
 def admin_pending_orders():
     db = get_db()
@@ -1307,7 +1297,6 @@ def admin_pending_orders():
 # ================== Completed Orders(Admin) ==================
 
 @app.route("/admin/orders/completed")
-@admin_ip_required
 @admin_required
 def admin_completed_orders():
     db = get_db()
@@ -1333,7 +1322,6 @@ def admin_completed_orders():
 # ================== Admin_Orders(Admin) ==================
 
 @app.route("/admin/orders/<int:order_id>", methods=["GET", "POST"])
-@admin_ip_required
 @admin_required
 def admin_order_detail(order_id):
     db = get_db()
@@ -1400,7 +1388,6 @@ def admin_order_detail(order_id):
 # ================== Admin_user detail==================
 
 @app.route("/admin/users")
-@admin_ip_required
 @admin_required
 def admin_users():
     db = get_db()
@@ -1421,7 +1408,6 @@ def admin_users():
 # ================== Admin/cart==================
 
 @app.route("/admin/cart")
-@admin_ip_required
 @admin_required
 def admin_cart():
     db = get_db()
@@ -1447,7 +1433,6 @@ from werkzeug.utils import secure_filename
 UPLOAD_FOLDER = "static/uploads"
 
 @app.route("/admin/add-product", methods=["GET", "POST"])
-@admin_ip_required
 @admin_required
 def admin_add_product():
     if request.method == "GET":
@@ -1498,7 +1483,6 @@ def admin_add_product():
 
 # ================== Edit product (admin) ==================
 @app.route("/admin/edit-product/<int:product_id>", methods=["GET", "POST"])
-@admin_ip_required
 @admin_required
 def admin_edit_product(product_id):
     db = get_db()
@@ -1568,7 +1552,6 @@ def admin_edit_product(product_id):
 
 # ================== Delete product (Admin) ==================
 @app.route("//orders/track/admin/delete-product/<int:product_id>")
-@admin_ip_required
 @admin_required
 def admin_delete_product(product_id):
     db = get_db()
