@@ -11,7 +11,7 @@ from flask import abort
 
 # Put YOUR real public IP here (example only)
 ALLOWED_ADMIN_IPS = set(
-    os.environ.get("ADMIN_ALLOWED_IPS", "").split(",")
+    os.environ.get("152.58.123.184", "").split(",")
 )
 
 def admin_ip_required(func):
