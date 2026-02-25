@@ -1180,13 +1180,13 @@ def verify_change_password():
 from flask import request, jsonify, session, render_template, redirect
 
 @app.route("/admin/login", methods=["GET"])
-
+@admin_ip_required
 def admin_login_page():
     return render_template("admin_login.html")
 
 
 @app.route("/admin/login", methods=["POST"])
-
+@admin_ip_required
 def admin_login():
 
     data = request.get_json()
