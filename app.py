@@ -11,7 +11,7 @@ from flask import abort
 
 # Put YOUR real public IP here (example only)
 ALLOWED_ADMIN_IPS = set(
-    os.environ.get("152.58.123.184", "").split(",")
+    os.environ.get("ADMIN_ALLOWED_IPS", "").split(",")
 )
 
 def admin_ip_required(func):
@@ -1180,13 +1180,13 @@ def verify_change_password():
 from flask import request, jsonify, session, render_template, redirect
 
 @app.route("/admin/login", methods=["GET"])
-@admin_ip_required
+
 def admin_login_page():
     return render_template("admin_login.html")
 
 
 @app.route("/admin/login", methods=["POST"])
-@admin_ip_required
+
 def admin_login():
 
     data = request.get_json()
